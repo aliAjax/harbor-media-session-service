@@ -1,0 +1,14 @@
+openapi: 3.0.3
+info:
+  title: Harbor SFU Control API
+  version: 1.0.0
+paths:
+  /healthz: {get: {responses: {"200": {description: OK}}}}
+  /readyz: {get: {responses: {"200": {description: Ready}}}}
+  /metrics: {get: {responses: {"200": {description: Metrics}}}}
+  /v1/rooms:
+    get: {responses: {"200": {description: Rooms}}}
+    post: {responses: {"201": {description: Created}}}
+  /v1/rooms/{id}/join: {post: {parameters: [{name: id, in: path, required: true, schema: {type: string}}], responses: {"201": {description: Joined}}}}
+  /v1/rooms/{id}/publish: {post: {parameters: [{name: id, in: path, required: true, schema: {type: string}}], responses: {"201": {description: Published}}}}
+  /v1/rooms/{id}/signal: {get: {description: WebSocket upgrade for signaling}}
