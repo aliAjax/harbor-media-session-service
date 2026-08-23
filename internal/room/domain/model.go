@@ -9,6 +9,7 @@ import (
 var ErrNotFound = errors.New("room resource not found")
 var ErrConflict = errors.New("room resource conflict")
 var ErrClosed = errors.New("room is closed")
+var ErrInvalidTransition = errors.New("invalid room transition")
 
 type Status string
 

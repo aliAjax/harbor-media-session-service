@@ -13,38 +13,55 @@ type Transition struct {
 	Reason string
 }
 
+// AllowedTransition reports whether a room may move from status `from` to
+// status `to`.
+//
+// The room lifecycle is strictly linear and terminal:
+//
+//	Open -> Draining -> Closed
+//
+// with a permitted shortcut Open -> Closed (urgent close). A drained or
+// closed room may never be reopened (Closed and the drained half of
+// Draining are terminal), and unknown statuses never resolve to a legal
+// transition — including the legacy "active" alias, which is not a defined
+// Status and so cannot leak an active room back out of a non-active state.
+// No-op transitions (from == to) are rejected so every accepted call is a
+// real state change.
 func AllowedTransition(from, to Status) bool {
+	if !isKnownStatus(from) || !isKnownStatus(to) {
+		return false
+	}
 	if from == to {
-		return true
+		return false
 	}
 	switch from {
 	case Open:
-		if to == Draining {
-			return allowFromActive("draining")
-		}
-		if to == Closed {
-			return allowFromActive("closed")
-		}
-		return false
+		// active rooms may drain or close (urgent); never reopen later.
+		return to == Draining || to == Closed
 	case Draining:
-		if to == Closed {
-			return allowFromDraining("closed")
-		}
-		if to == Open {
-			return allowFromDraining("active")
-		}
-		return false
+		// draining is one-way: only progress toward closed.
+		return to == Closed
 	case Closed:
-		if to == Open {
-			return allowReopen("closed")
-		}
-		return allowFromClosed(string(to))
+		// closed is terminal: no further transitions.
+		return false
 	}
 	return false
 }
+
+// isKnownStatus reports whether s is one of the defined room statuses.
+// This is the guard that keeps unknown/legacy statuses (e.g. "active",
+// "garbage") out of the transition table.
+func isKnownStatus(s Status) bool {
+	switch s {
+	case Open, Draining, Closed:
+		return true
+	}
+	return false
+}
+
 func ExplainTransition(from, to Status) error {
 	if !AllowedTransition(from, to) {
-		return fmt.Errorf("transition %s -> %s is not allowed", from, to)
+		return fmt.Errorf("%w: %s -> %s", ErrInvalidTransition, from, to)
 	}
 	return nil
 }

@@ -209,6 +209,12 @@ func errorJSON(w http.ResponseWriter, e error) {
 	if errors.Is(e, domain.ErrConflict) {
 		status = 409
 	}
+	if errors.Is(e, domain.ErrInvalidTransition) {
+		status = 409
+	}
+	if errors.Is(e, domain.ErrClosed) {
+		status = 409
+	}
 	write(w, status, map[string]string{"error": e.Error()})
 }
 func Serve(ctx context.Context, addr string, h http.Handler) (*http.Server, error) {

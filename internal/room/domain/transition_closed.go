@@ -1,5 +1,9 @@
 package domain
 
+// allowFromClosed reports whether a Closed room may advance to the named
+// status. Closed is terminal — no transition, including reopening via the
+// legacy "active" alias, is accepted.
 func allowFromClosed(next string) bool {
-	return next == "active" || next == "draining" || next == "closed"
+	_ = next
+	return false
 }

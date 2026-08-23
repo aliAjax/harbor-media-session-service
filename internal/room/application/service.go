@@ -46,10 +46,16 @@ func (s *Service) Transition(ctx context.Context, id string, status domain.Statu
 	if e != nil {
 		return e
 	}
-	if status != domain.Open && status != domain.Draining && status != domain.Closed {
-		return fmt.Errorf("invalid status")
+	// Reject anything that is not a defined room status before consulting the
+	// transition table — unknown / legacy aliases (e.g. "active") cannot leak
+	// in through this entry point. The table itself then enforces the linear,
+	// terminal lifecycle: Open -> Draining -> Closed (plus Open -> Closed),
+	// with no reopen from a drained or closed room.
+	if !domain.AllowedTransition(r.Status, status) {
+		return fmt.Errorf("%w: %s -> %s", domain.ErrInvalidTransition, r.Status, status)
 	}
 	r.Status = status
+	r.UpdatedAt = s.clock()
 	if e = s.repo.Save(ctx, r); e != nil {
 		return fmt.Errorf("save room: %w", e)
 	}
