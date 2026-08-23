@@ -18,8 +18,10 @@ func (d *Dispatcher) Dispatch(ctx context.Context, s *Session, m domain.Message)
 		return fmt.Errorf("stale sequence")
 	}
 	m.RoomID = s.State.RoomID
+	// Clone before enqueueing so the queued message owns its Payload map and
+	// cannot be rewritten by the caller or by any other recipient.
 	select {
-	case s.Send <- m:
+	case s.Send <- m.Clone():
 		return nil
 	case <-ctx.Done():
 		return ctx.Err()

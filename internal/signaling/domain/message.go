@@ -25,3 +25,18 @@ func (s *State) Accept(m Message) bool {
 	}
 	return true
 }
+
+// Clone returns an independent deep copy of the message so that queued copies
+// handed to different recipients never share the Payload map. A nil Payload
+// stays nil.
+func (m Message) Clone() Message {
+	cp := m
+	if m.Payload != nil {
+		payload := make(map[string]any, len(m.Payload))
+		for k, v := range m.Payload {
+			payload[k] = v
+		}
+		cp.Payload = payload
+	}
+	return cp
+}

@@ -25,3 +25,15 @@ func (m Manifest) Validate() error {
 	return nil
 }
 func (m Manifest) JSON() []byte { b, _ := json.Marshal(m); return b }
+
+// Clone returns a deep copy of the manifest so the caller and the registry
+// never share the Tracks backing array. A nil Tracks slice stays nil.
+func (m Manifest) Clone() Manifest {
+	cp := m
+	if m.Tracks != nil {
+		tracks := make([]string, len(m.Tracks))
+		copy(tracks, m.Tracks)
+		cp.Tracks = tracks
+	}
+	return cp
+}

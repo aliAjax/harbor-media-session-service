@@ -102,15 +102,28 @@ func (r *Room) Snapshot() Room {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	out := Room{ID: r.ID, TenantID: r.TenantID, Name: r.Name, Status: r.Status, NodeID: r.NodeID, FencingToken: r.FencingToken, CreatedAt: r.CreatedAt, UpdatedAt: r.UpdatedAt}
-	out.Participants = map[string]*Participant{}
-	for k, v := range r.Participants {
-		cp := *v
-		out.Participants[k] = &cp
+	// Only populate the participant/track maps when the source does: a zero
+	// value Room (nil maps) must snapshot to nil maps, not invent empty ones.
+	if r.Participants != nil {
+		out.Participants = map[string]*Participant{}
+		for k, v := range r.Participants {
+			cp := *v
+			out.Participants[k] = &cp
+		}
 	}
-	out.Tracks = map[string]*Track{}
-	for k, v := range r.Tracks {
-		cp := *v
-		out.Tracks[k] = &cp
+	if r.Tracks != nil {
+		out.Tracks = map[string]*Track{}
+		for k, v := range r.Tracks {
+			cp := *v
+			// Deep-copy the Layers slice: the struct copy above only aliases the
+			// backing array, so a later Layers mutation would rewrite the snapshot.
+			if v.Layers != nil {
+				layers := make([]Layer, len(v.Layers))
+				copy(layers, v.Layers)
+				cp.Layers = layers
+			}
+			out.Tracks[k] = &cp
+		}
 	}
 	return out
 }

@@ -25,8 +25,11 @@ func (q *FeedbackQueue) Push(f domain.Feedback) {
 func (q *FeedbackQueue) Drain() []domain.Feedback {
 	q.mu.Lock()
 	defer q.mu.Unlock()
-	o := q.items
+	out := make([]domain.Feedback, len(q.items))
+	copy(out, q.items)
+	// Drop the reference to the old backing array so a subsequent Push cannot
+	// overwrite the snapshot we just handed to the caller.
 	q.items = q.items[:0]
-	return o
+	return out
 }
 func (q *FeedbackQueue) Len() int { q.mu.Lock(); defer q.mu.Unlock(); return len(q.items) }

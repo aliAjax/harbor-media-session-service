@@ -40,8 +40,10 @@ func (h *Hub) Broadcast(room string, m domain.Message, except string) {
 	defer h.mu.RUnlock()
 	for id, s := range h.sessions {
 		if id != except && s.State.RoomID == room {
+			// Clone per recipient so one consumer mutating its Payload cannot
+			// rewrite the message seen by any other recipient.
 			select {
-			case s.Send <- m:
+			case s.Send <- m.Clone():
 			default:
 			}
 		}
