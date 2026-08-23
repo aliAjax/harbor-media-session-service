@@ -1,0 +1,7 @@
+http_addr: ":8093"
+udp_addr: ":10000"
+node_id: "node-local"
+shutdown_timeout: 10s
+limits:
+  max_rooms: 100
+  max_participants: 500
