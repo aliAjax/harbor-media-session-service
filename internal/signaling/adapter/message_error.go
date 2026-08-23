@@ -2,4 +2,4 @@ package adapter
 
 import "fmt"
 
-func wrapMessageReadError(err error) error { return fmt.Errorf("message read: %v", err) }
+func wrapMessageReadError(err error) error { return fmt.Errorf("message read: %w", err) }
