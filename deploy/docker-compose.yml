@@ -1,0 +1,7 @@
+services:
+  harbor-sfu:
+    build: {context: .., dockerfile: deploy/Dockerfile}
+    ports: ["8093:8093", "10000:10000/udp"]
+    environment:
+      HARBOR_HTTP_ADDR: ":8093"
+      HARBOR_UDP_ADDR: ":10000"
