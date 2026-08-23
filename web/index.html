@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Harbor SFU Console</title>
+  <style>
+    body { font: 16px system-ui, sans-serif; margin: 0; background: #f4f6f8; color: #18212b; }
+    main { max-width: 860px; margin: 48px auto; padding: 0 24px; }
+    header { display: flex; justify-content: space-between; align-items: baseline; }
+    section { background: white; border: 1px solid #d9e0e7; padding: 20px; margin-top: 18px; }
+    code { background: #eef2f5; padding: 2px 5px; }
+    #status { font-weight: 600; }
+  </style>
+</head>
+<body>
+  <main>
+    <header><h1>Harbor SFU</h1><span id="status">checking health...</span></header>
+    <section><p>Real-time media control plane for rooms, participants, tracks and signaling.</p>
+      <p>API health: <code>/healthz</code> &middot; readiness: <code>/readyz</code> &middot; metrics: <code>/metrics</code></p>
+    </section>
+  </main>
+  <script>
+    fetch('/healthz').then(r => r.ok ? r.json() : Promise.reject(r.status))
+      .then(v => { document.querySelector('#status').textContent = 'online: ' + v.node; })
+      .catch(() => { document.querySelector('#status').textContent = 'offline'; });
+  </script>
+</body>
+</html>
