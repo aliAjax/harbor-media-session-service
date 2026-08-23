@@ -18,6 +18,9 @@ func NewTrackRouter() *TrackRouter {
 func (r *TrackRouter) Register(id string, f *Forwarder) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	r.initForwarders()
+	r.initRemap()
+	r.initStats()
 	r.forwarders[id] = f
 	r.remap[id] = NewRemapper()
 	r.stats[id] = &Stats{}
@@ -25,6 +28,9 @@ func (r *TrackRouter) Register(id string, f *Forwarder) {
 func (r *TrackRouter) Unregister(id string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	r.initForwarders()
+	r.initRemap()
+	r.initStats()
 	if f := r.forwarders[id]; f != nil {
 		f.Close()
 	}
@@ -35,6 +41,9 @@ func (r *TrackRouter) Unregister(id string) {
 func (r *TrackRouter) Publish(id string, p domain.Packet) bool {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
+	// Reading a nil map yields the zero value, so a zero-value TrackRouter
+	// without a prior Register returns false here without panic. Map mutation
+	// is confined to the write-locked Register/Unregister paths.
 	f := r.forwarders[id]
 	if f == nil {
 		return false
