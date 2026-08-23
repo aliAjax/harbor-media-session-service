@@ -23,6 +23,7 @@ type Store struct {
 func NewStore() *Store { return &Store{leases: map[string]Lease{}} }
 func (s *Store) Acquire(room, owner string, ttl time.Duration) (Lease, error) {
 	s.mu.Lock()
+	defer s.mu.Unlock()
 	now := time.Now()
 	if old, ok := s.leases[room]; ok && old.ExpiresAt.After(now) && old.Owner != owner {
 		return Lease{}, ErrLeaseLost
@@ -30,7 +31,6 @@ func (s *Store) Acquire(room, owner string, ttl time.Duration) (Lease, error) {
 	s.seq++
 	l := Lease{RoomID: room, Owner: owner, Token: s.seq, ExpiresAt: now.Add(ttl)}
 	s.leases[room] = l
-	s.mu.Unlock()
 	return l, nil
 }
 func (s *Store) Renew(l Lease, ttl time.Duration) (Lease, error) {

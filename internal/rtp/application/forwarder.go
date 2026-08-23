@@ -26,12 +26,12 @@ func NewForwarder() *Forwarder {
 }
 func (f *Forwarder) Add(id string, buffer int) (*Subscriber, error) {
 	f.mu.Lock()
+	defer f.mu.Unlock()
 	if _, ok := f.subs[id]; ok {
 		return nil, fmt.Errorf("subscriber exists")
 	}
 	s := &Subscriber{ID: id, C: make(chan domain.Packet, buffer)}
 	f.subs[id] = s
-	f.mu.Unlock()
 	return s, nil
 }
 func (f *Forwarder) Remove(id string) {

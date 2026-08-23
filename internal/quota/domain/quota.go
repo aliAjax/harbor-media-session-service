@@ -33,6 +33,7 @@ func (m *Manager) Set(tenant string, l Limits) {
 }
 func (m *Manager) Reserve(tenant string, delta Usage) error {
 	m.mu.Lock()
+	defer m.mu.Unlock()
 	l := m.limits[tenant]
 	u := m.usage[tenant]
 	n := Usage{u.Rooms + delta.Rooms, u.Participants + delta.Participants, u.Tracks + delta.Tracks, u.Subscriptions + delta.Subscriptions, u.Bandwidth + delta.Bandwidth}
@@ -52,7 +53,6 @@ func (m *Manager) Reserve(tenant string, delta Usage) error {
 		return fmt.Errorf("bandwidth quota exceeded")
 	}
 	m.usage[tenant] = n
-	m.mu.Unlock()
 	return nil
 }
 func (m *Manager) Release(tenant string, delta Usage) {
