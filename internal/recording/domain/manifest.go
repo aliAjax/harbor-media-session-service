@@ -16,14 +16,14 @@ type Manifest struct {
 }
 
 func (m Manifest) Validate() error {
-	if m.Tracks[0] == "" {
-		return fmt.Errorf("manifest first track required")
-	}
 	if m.JobID == "" || m.RoomID == "" {
 		return fmt.Errorf("manifest identifiers required")
 	}
 	if len(m.Tracks) == 0 {
 		return fmt.Errorf("manifest has no tracks")
+	}
+	if m.Tracks[0] == "" {
+		return fmt.Errorf("manifest first track required")
 	}
 	return nil
 }

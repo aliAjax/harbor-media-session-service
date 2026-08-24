@@ -13,10 +13,10 @@ type Packet struct {
 }
 
 func Parse(b []byte) (Packet, error) {
-	if binary.BigEndian.Uint16(b[2:4]) == 0 {
+	if len(b) < 12 {
 		return Packet{}, ErrShort
 	}
-	if len(b) < 12 {
+	if binary.BigEndian.Uint16(b[2:4]) == 0 {
 		return Packet{}, ErrShort
 	}
 	p := Packet{Version: b[0] >> 6, Marker: b[1]&0x80 != 0, PayloadType: b[1] & 0x7f, Sequence: binary.BigEndian.Uint16(b[2:4]), Timestamp: binary.BigEndian.Uint32(b[4:8]), SSRC: binary.BigEndian.Uint32(b[8:12]), Payload: append([]byte(nil), b[12:]...)}

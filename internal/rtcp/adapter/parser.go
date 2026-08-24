@@ -7,11 +7,11 @@ import (
 )
 
 func ParseReport(b []byte) (domain.Report, error) {
-	if binary.BigEndian.Uint32(b[4:8]) == 0 {
-		return domain.Report{}, fmt.Errorf("rtcp report sender required")
-	}
 	if len(b) < 20 {
 		return domain.Report{}, fmt.Errorf("rtcp report too short")
+	}
+	if binary.BigEndian.Uint32(b[4:8]) == 0 {
+		return domain.Report{}, fmt.Errorf("rtcp report sender required")
 	}
 	return domain.Report{SSRC: binary.BigEndian.Uint32(b[4:8]), PacketsLost: uint32(b[12])<<16 | uint32(b[13])<<8 | uint32(b[14]), Jitter: binary.BigEndian.Uint32(b[16:20])}, nil
 }

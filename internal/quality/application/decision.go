@@ -5,6 +5,9 @@ import (
 )
 
 func Decide(policy domain.Policy, layers []domain.LayerInput, loss uint64, bw int64) domain.LayerDecision {
+	if len(layers) == 0 {
+		return domain.LayerDecision{RID: "low", Bitrate: policy.Clamp(bw), Reason: "no layers available"}
+	}
 	if layers[0].RID == "" {
 		return domain.LayerDecision{RID: "low", Bitrate: policy.Clamp(bw), Reason: "missing layer id"}
 	}
